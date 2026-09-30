@@ -1,0 +1,2 @@
+aiogram>=3.13,<4
+discord.py>=2.4,<3
