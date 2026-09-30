@@ -14,6 +14,7 @@ Only the user IDs set in `.env` can use it; everyone else is ignored.
    set -a; . ./.env; set +a
    python main.py
    ```
+The bottom keyboard in Telegram (Старт, Стоп, Таймер, Задачи, Отчёт, Лимиты) replaces typing the common commands. Under `Задачи` and `Лимиты` there are inline buttons (start a task, mark it done, log +1 usage).
 Telegram commands start with `/`, Discord commands with `!` (e.g. `/tasks` vs `!tasks`). Send `help` for the list.
 
 ## Limits

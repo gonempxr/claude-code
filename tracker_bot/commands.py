@@ -67,11 +67,18 @@ class Tracker:
         self.db.commit()
         return f"Added task #{cur.lastrowid}: {title}"
 
-    def list_tasks(self) -> str:
+    def open_tasks(self) -> list[tuple[int, str]]:
         rows = self.db.execute("SELECT id, title FROM tasks WHERE done_at IS NULL ORDER BY id").fetchall()
-        if not rows:
+        return [(r["id"], r["title"]) for r in rows]
+
+    def limit_names(self) -> list[str]:
+        return [r["name"] for r in self.db.execute("SELECT name FROM limits ORDER BY name")]
+
+    def list_tasks(self) -> str:
+        tasks = self.open_tasks()
+        if not tasks:
             return "No open tasks."
-        return "\n".join(f"#{r['id']} {r['title']}" for r in rows)
+        return "\n".join(f"#{i} {title}" for i, title in tasks)
 
     def done_task(self, task_id: int, now: int) -> str:
         row = self.db.execute("SELECT title, done_at FROM tasks WHERE id = ?", (task_id,)).fetchone()
