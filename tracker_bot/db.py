@@ -26,6 +26,10 @@ CREATE TABLE IF NOT EXISTS usage (
     amount REAL NOT NULL,
     at INTEGER NOT NULL
 );
+CREATE TABLE IF NOT EXISTS settings (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL
+);
 CREATE INDEX IF NOT EXISTS usage_by_limit ON usage(limit_name, at);
 """
 

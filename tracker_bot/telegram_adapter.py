@@ -1,3 +1,5 @@
+import asyncio
+import logging
 import time
 
 from aiogram import Bot, Dispatcher
@@ -110,5 +112,25 @@ def build_dispatcher(owner_id: int, tracker: Tracker) -> Dispatcher:
     return dp
 
 
+async def send_due(bot: Bot, owner_id: int, tracker: Tracker, now: int) -> None:
+    # In a private chat the chat id equals the user id.
+    for text in tracker.due_notifications(now):
+        await bot.send_message(owner_id, text)
+
+
+async def notify_loop(bot: Bot, owner_id: int, tracker: Tracker, interval: int = 60) -> None:
+    while True:
+        try:
+            await send_due(bot, owner_id, tracker, int(time.time()))
+        except Exception:  # a network blip must not kill the loop
+            logging.exception("notification check failed")
+        await asyncio.sleep(interval)
+
+
 async def run(token: str, owner_id: int, tracker: Tracker) -> None:
-    await build_dispatcher(owner_id, tracker).start_polling(Bot(token))
+    bot = Bot(token)
+    loop_task = asyncio.create_task(notify_loop(bot, owner_id, tracker))
+    try:
+        await build_dispatcher(owner_id, tracker).start_polling(bot)
+    finally:
+        loop_task.cancel()

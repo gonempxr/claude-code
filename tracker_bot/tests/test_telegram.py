@@ -12,7 +12,7 @@ from aiogram.types import CallbackQuery, Chat, Message, Update, User
 
 import db
 from commands import Tracker
-from telegram_adapter import build_dispatcher, inline_markup, parse_callback
+from telegram_adapter import build_dispatcher, inline_markup, parse_callback, send_due
 
 OWNER, STRANGER = 111, 222
 
@@ -59,7 +59,7 @@ def _tracker():
 def test_button_label_runs_command_and_keeps_main_keyboard():
     t = _tracker()
     calls = _send(t, lambda: Update(update_id=1, message=_msg(OWNER, "📋 Задачи")))
-    assert calls[0].text == "No open tasks."
+    assert calls[0].text == "Открытых задач нет."
     assert calls[0].reply_markup.keyboard[0][0].text == "▶ Старт"
 
 
@@ -80,8 +80,8 @@ def test_stranger_is_ignored():
 def test_start_shows_help_not_timer():
     t = _tracker()
     calls = _send(t, lambda: Update(update_id=1, message=_msg(OWNER, "/start")))
-    assert calls[0].text.startswith("Tasks")
-    assert t.timer(0) == "No timer is running."
+    assert calls[0].text.startswith("Задачи")
+    assert t.timer(0) == "Таймер не запущен."
 
 
 def test_callback_done_completes_task_and_redraws_list():
@@ -93,8 +93,8 @@ def test_callback_done_completes_task_and_redraws_list():
     ))
     calls = _send(t, cb)
     assert t.open_tasks() == []
-    assert isinstance(calls[0], AnswerCallbackQuery) and "Done #1" in calls[0].text
-    assert isinstance(calls[1], EditMessageText) and calls[1].text == "No open tasks."
+    assert isinstance(calls[0], AnswerCallbackQuery) and "Готово #1" in calls[0].text
+    assert isinstance(calls[1], EditMessageText) and calls[1].text == "Открытых задач нет."
 
 
 def test_callback_from_stranger_changes_nothing():
@@ -119,3 +119,15 @@ def test_overlong_limit_name_is_skipped_not_crashing():
     t = _tracker()
     t.execute("limit " + "я" * 40 + " 10 5", 0)  # 40 cyrillic chars = 80 bytes of callback data
     assert inline_markup(t, "limits") is None
+
+
+def test_send_due_pushes_notifications_to_owner():
+    t = _tracker()
+    t.execute("summary 00:00", 0)
+    session = StubSession()
+    bot = Bot("123456:TESTTOKEN", session=session)
+    asyncio.run(send_due(bot, OWNER, t, 1_750_000_000))
+    assert len(session.calls) == 1
+    assert session.calls[0].chat_id == OWNER and session.calls[0].text.startswith("Итог дня")
+    asyncio.run(send_due(bot, OWNER, t, 1_750_000_060))
+    assert len(session.calls) == 1  # nothing new, nothing resent
