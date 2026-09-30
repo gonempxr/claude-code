@@ -34,6 +34,17 @@ It runs only while the Mac is awake; with the lid closed or asleep the bot stops
 After `git pull`, restart it with `launchctl kickstart -k gui/$(id -u)/com.personal.trackerbot`.
 Not tested on a real Mac by the author of these scripts: the generated plist was only validated for syntax.
 
+## Claude usage in chat (`claude` command / 🤖 Claude button)
+Shows subscription limits (5-hour and 7-day, in %), token totals and whether Claude Code is working right now.
+It reads files Claude Code writes on the machine where the bot runs, so it only sees **Claude Code sessions on that machine**
+(not claude.ai chats, the mobile app, or cloud sessions).
+1. `python3 deploy/install_statusline.py` points Claude Code's status line at `deploy/claude_statusline.py`
+   (refuses to replace a status line you already have unless `--force`; backs up `settings.json`). Restart Claude Code.
+2. Limit percentages appear only for Pro/Max subscribers and only after Claude Code's first reply in a session,
+   and refresh on every reply. The bot marks data older than 10 minutes.
+Token totals come from `~/.claude/projects` transcripts and work without step 1. Subscription limits are not measured in tokens.
+`CLAUDE_HOME` overrides the `~/.claude` location.
+
 ## Limits
 Limits are rolling windows you log by hand (`limit claude-5h 45 5 messages`, then `use claude-5h`).
 There is no API to read Claude subscription usage, so the bot cannot fetch it automatically.

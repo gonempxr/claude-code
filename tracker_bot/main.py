@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from pathlib import Path
 
 import config
 import db
@@ -10,7 +11,7 @@ from commands import Tracker
 
 async def main() -> None:
     cfg = config.load()
-    tracker = Tracker(db.connect(cfg.db_path), cfg.tz)
+    tracker = Tracker(db.connect(cfg.db_path), cfg.tz, Path(cfg.claude_home))
     jobs = []
     if cfg.telegram_token:
         jobs.append(telegram_adapter.run(cfg.telegram_token, cfg.telegram_user_id, tracker))

@@ -23,8 +23,9 @@ BUTTONS = {
     "📋 Задачи": "tasks",
     "📊 Отчёт": "report today",
     "📉 Лимиты": "limits",
+    "🤖 Claude": "claude",
 }
-_LAYOUT = [["▶ Старт", "⏹ Стоп", "⏱ Таймер"], ["📋 Задачи", "📊 Отчёт", "📉 Лимиты"]]
+_LAYOUT = [["▶ Старт", "⏹ Стоп", "⏱ Таймер"], ["📋 Задачи", "📊 Отчёт", "📉 Лимиты"], ["🤖 Claude"]]
 MAIN_KEYBOARD = ReplyKeyboardMarkup(
     keyboard=[[KeyboardButton(text=label) for label in row] for row in _LAYOUT],
     resize_keyboard=True,

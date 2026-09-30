@@ -10,6 +10,7 @@ class Config:
     discord_user_id: int | None
     tz: str
     db_path: str
+    claude_home: str
 
 
 def _int(name: str) -> int | None:
@@ -25,6 +26,7 @@ def load() -> Config:
         discord_user_id=_int("DISCORD_USER_ID"),
         tz=os.environ.get("TZ_NAME", "UTC"),
         db_path=os.environ.get("DB_PATH", "tracker.db"),
+        claude_home=os.environ.get("CLAUDE_HOME", "").strip() or os.path.expanduser("~/.claude"),
     )
     if not (cfg.telegram_token or cfg.discord_token):
         raise SystemExit("Set TELEGRAM_TOKEN and/or DISCORD_TOKEN (see .env.example)")

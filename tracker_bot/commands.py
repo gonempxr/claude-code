@@ -7,8 +7,11 @@ Telegram adapter's background loop.
 """
 import re
 import sqlite3
+from pathlib import Path
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
+
+import claude_usage
 
 HELP = """Задачи
   task <текст>         добавить задачу
@@ -27,7 +30,9 @@ HELP = """Задачи
 Уведомления
   summary HH:MM|off    время ежедневной сводки (по умолчанию 21:00)
   longtimer <часов>|off  напомнить, если таймер идёт дольше (по умолчанию 3)
-  settings             текущие настройки"""
+  settings             текущие настройки
+Claude
+  claude               лимиты подписки, токены, идёт ли работа"""
 
 DEFAULT_SUMMARY = "21:00"
 DEFAULT_LONG_TIMER = "3"
@@ -69,9 +74,10 @@ def _parse_id(s: str) -> int:
 
 
 class Tracker:
-    def __init__(self, conn: sqlite3.Connection, tz: str = "UTC"):
+    def __init__(self, conn: sqlite3.Connection, tz: str = "UTC", claude_home: Path | None = None):
         self.db = conn
         self.tz = ZoneInfo(tz)
+        self.claude_home = claude_home
 
     # ---- settings storage ----
     def _get(self, key: str, default: str | None = None) -> str | None:
@@ -386,6 +392,8 @@ class Tracker:
                 return self.set_long_timer(args)
             if cmd == "settings":
                 return self.settings()
+            if cmd == "claude":
+                return claude_usage.report(self.claude_home, now, self.tz)
             return f"Неизвестная команда '{cmd}'.\n\n{HELP}"
         except CommandError as e:
             return str(e)
