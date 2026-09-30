@@ -24,6 +24,16 @@ The bot checks once a minute and writes to you first:
 - "limit is free again" when a limit you had used to 80%+ drops back under it.
 They only arrive while the bot process is running. A message that fails to send (no network) is not retried.
 
+## Run in the background on macOS (free)
+Stop the bot in Terminal first (two copies cannot poll one Telegram token), then from `tracker_bot`:
+```
+bash deploy/install_macos.sh
+```
+The bot starts at login, restarts after a crash, and logs to `logs/bot.log`. `bash deploy/install_macos.sh uninstall` removes it.
+It runs only while the Mac is awake; with the lid closed or asleep the bot stops and catches up when the Mac wakes.
+After `git pull`, restart it with `launchctl kickstart -k gui/$(id -u)/com.personal.trackerbot`.
+Not tested on a real Mac by the author of these scripts: the generated plist was only validated for syntax.
+
 ## Limits
 Limits are rolling windows you log by hand (`limit claude-5h 45 5 messages`, then `use claude-5h`).
 There is no API to read Claude subscription usage, so the bot cannot fetch it automatically.
